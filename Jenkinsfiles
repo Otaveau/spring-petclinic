@@ -22,6 +22,15 @@ pipeline {
             }
             steps {
                 sh 'rm -rf /var/www/target' 
+                copyArtifacts('upstream') {
+                    includePatterns('*.jar')
+                    excludePatterns()
+                    targetDirectory('/var/www')
+                    flatten()
+                    optional()
+                    buildSelector {
+                        latestSuccessful(true)
+                    }
                 sh 'mv /var/www/target/spring-petclinic-*.jar /var/www/target/spring-petclinic-prod.jar'
                 sh 'sudo chown baeldung:jenkins /var/www/target/spring-petclinic-prod.jar'
                 sh 'sudo systemctl restart petclinic'
