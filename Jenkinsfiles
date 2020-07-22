@@ -14,16 +14,14 @@ pipeline {
                 junit 'target/*.xml'
             }
         }
+
+        stage ('copy') {
+            sh 'rm -rf /var/www/target'
+             copyArtifacts (projectName: 'Projet test', selector: lastSuccessful())
+        }
+
         stage('Deploy') {
             steps {
-                sh 'rm -rf /var/www/target' 
-                copyArtifacts('upstream') {
-                    includePatterns('*.jar', '*.xml')
-                    excludePatterns()
-                    targetDirectory('/var/www')
-                    flatten()
-                    optional()
-                }
                 sh 'mv /var/www/target/spring-petclinic-*.jar /var/www/target/spring-petclinic-prod.jar'
                 sh 'sudo chown baeldung:jenkins /var/www/target/spring-petclinic-prod.jar'
                 sh 'sudo systemctl restart petclinic'
