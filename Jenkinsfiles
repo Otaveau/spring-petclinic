@@ -16,8 +16,10 @@ pipeline {
         }
 
         stage ('copy') {
-            sh 'rm -rf /var/www/target'
-             copyArtifacts (projectName: 'Projet test', selector: lastSuccessful())
+            steps {
+                sh 'rm -rf /var/www/target'
+                copyArtifacts (projectName: 'Projet test', selector: lastSuccessful())
+            }
         }
 
         stage('Deploy') {
