@@ -18,7 +18,7 @@ pipeline {
             steps {
                 sh 'rm -rf /var/www/target' 
                 copyArtifacts('upstream') {
-                    includePatterns('*.jar')
+                    includePatterns('*.jar', '*.xml')
                     excludePatterns()
                     targetDirectory('/var/www')
                     flatten()
