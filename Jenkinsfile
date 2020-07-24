@@ -2,34 +2,37 @@ pipeline {
 
     agent any
 
-    stage('Checkout code') {
-      steps {
-        checkout scm
-      }
-    }
+    stages {
+        stage('Checkout code') {
+            steps {
+                checkout scm
+            }
+        }
 
-    stage('Build') {
-      steps {
-        sh 'mvn -B jacoco:report checkstyle:checkstyle install'
-        archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
-        sh 'docker build -t petclinic .'
-      }
-    }
+        stage('Build') {
+            steps {
+                sh 'mvn -B jacoco:report checkstyle:checkstyle install'
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                sh 'docker build -t petclinic .'
+            }
+        }
 
-    stage('Publish Test Coverage Report and Code Analysis') {
-      steps {
-        jacoco()
-        recordIssues(tools: [checkStyle(), junitParser(), mavenConsole()])
-      }
-    }
+        stage('Publish Test Coverage Report and Code Analysis') {
+            steps {
+                jacoco()
+                recordIssues(tools: [checkStyle(), junitParser(), mavenConsole()])
+            }
+        }
 
-    stage('Deploy') {
-      steps {
-        // copyArtefact....
-        // sh 'sudo systemctl restart petclinic'
-        sh 'docker stop $(cat .dockerpidfile)'
-        sh 'docker run -p 8081:8080 -d petclinic > .dockerpidfile'
-      }
+        stage('Deploy') {
+            steps {
+                // copyArtefact....
+                // sh 'sudo systemctl restart petclinic'
+                sh 'docker stop $(cat .dockerpidfile)'
+                sh 'docker run -p 8081:8080 -d petclinic > .dockerpidfile'
+            
+            }
+        }
     }
 }
 
