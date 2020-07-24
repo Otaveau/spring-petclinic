@@ -1,11 +1,13 @@
 pipeline {
-  agent any
-  stages {
+
+    agent any
+
     stage('Checkout code') {
       steps {
         checkout scm
       }
     }
+
     stage('Build') {
       steps {
         sh 'mvn -B jacoco:report checkstyle:checkstyle install'
@@ -13,12 +15,14 @@ pipeline {
         sh 'docker build -t petclinic .'
       }
     }
+
     stage('Publish Test Coverage Report and Code Analysis') {
       steps {
         jacoco()
         recordIssues(tools: [checkStyle(), junitParser(), mavenConsole()])
       }
     }
+
     stage('Deploy') {
       steps {
         // copyArtefact....
@@ -27,4 +31,5 @@ pipeline {
         sh 'docker run -p 8081:8080 -d petclinic > .dockerpidfile'
       }
     }
-  }
+}
+
