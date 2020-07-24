@@ -17,12 +17,12 @@ pipeline {
             }
         }
 
-        stage('Publish Test Coverage Report and Code Analysis') {
+/*         stage('Publish Test Coverage Report and Code Analysis') {
             steps {
                 jacoco()
                 recordIssues(tools: [checkStyle(), junitParser(), mavenConsole()])
             }
-        }
+        } */
 
         stage('Deploy') {
             steps {
