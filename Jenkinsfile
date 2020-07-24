@@ -1,34 +1,30 @@
 pipeline {
-    agent any
-
-    stages {
-        stage('Build') {
-            steps {
-                sh 'mvn package'
-                archiveArtifacts artifacts: 'target/spring-petclinic-*.jar', fingerprint: true
-
-            }
-        }
-        stage('Test') {
-            steps {
-                junit 'target/surefire-reports/*.xml'
-            }
-        }
-
-        stage ('copy') {
-            steps {
-                sh 'rm -rf /var/www/target'
-                copyArtifacts (projectName: 'Projet test', selector: lastSuccessful())
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh 'mv /var/www/target/spring-petclinic-*.jar /var/www/target/spring-petclinic-prod.jar'
-                sh 'sudo chown baeldung:jenkins /var/www/target/spring-petclinic-prod.jar'
-                sh 'sudo systemctl restart petclinic'
-
-            }
-        }
+  agent any
+  stages {
+    stage('Checkout code') {
+      steps {
+        checkout scm
+      }
     }
-}
+    stage('Build') {
+      steps {
+        sh 'mvn -B jacoco:report checkstyle:checkstyle install'
+        archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+        sh 'docker build -t petclinic .'
+      }
+    }
+    stage('Publish Test Coverage Report and Code Analysis') {
+      steps {
+        jacoco()
+        recordIssues(tools: [checkStyle(), junitParser(), mavenConsole()])
+      }
+    }
+    stage('Deploy') {
+      steps {
+        // copyArtefact....
+        // sh 'sudo systemctl restart petclinic'
+        sh 'docker stop $(cat .dockerpidfile)'
+        sh 'docker run -p 8081:8080 -d petclinic > .dockerpidfile'
+      }
+    }
+  }
